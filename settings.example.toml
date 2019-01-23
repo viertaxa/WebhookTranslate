@@ -1,5 +1,5 @@
 Port = 8080
-ListeningServer = "https://hook.web.com"
+ListeningServer = "https://homeAssistant.web.com"
 WebhookIDs = [
     "Hook1",
     "Hook2"
