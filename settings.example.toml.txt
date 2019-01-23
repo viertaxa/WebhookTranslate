@@ -1,0 +1,6 @@
+Port = 8080
+ListeningServer = "https://hook.web.com"
+WebhookIDs = [
+    "Hook1",
+    "Hook2"
+]
