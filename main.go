@@ -1,11 +1,8 @@
 package main
 
 import (
-	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/BurntSushi/toml"
@@ -19,15 +16,6 @@ type Configuration struct {
 }
 
 var conf Configuration
-
-func handleWebhook(w http.ResponseWriter, r *http.Request) {
-	_, err := io.Copy(os.Stdout, r.Body)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-}
 
 func main() {
 	if _, err := toml.DecodeFile("settings.toml", &conf); err != nil {
@@ -43,22 +31,23 @@ func main() {
 func HookHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	if stringInSlice(vars["hook"], conf.WebhookIDs) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Println("Processing Hook: " + vars["hook"][0:3])
+		log.Println("Processing Hook: " + vars["hook"][0:3])
 		req, err := http.NewRequest("POST", conf.ListeningServer+"/api/webhook/"+vars["hook"], nil)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
-			panic(err)
+			w.WriteHeader(http.StatusBadGateway)
+			log.Println("response Status:", resp.Status)
+			log.Println("response Headers:", resp.Header)
+			return
 		}
 
-		fmt.Println("response Status:", resp.Status)
-		fmt.Println("response Headers:", resp.Header)
-
-		println(resp.Status)
+		w.WriteHeader(resp.StatusCode)
+		log.Println("response Status:", resp.Status)
+		log.Println("response Headers:", resp.Header)
 	} else {
-		fmt.Println("Ignored req:", vars["hook"])
+		log.Println("Ignored req:", vars["hook"])
 		return
 	}
 
